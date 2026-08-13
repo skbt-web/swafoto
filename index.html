@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pertandingan Swafoto Merdeka Peringkat SK Bukit Tongkat 2026</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js for Participation Visuals -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            merdekaBlue: '#002B7F',
+            merdekaRed: '#CE1126',
+            merdekaYellow: '#FCD116',
+            merdekaDark: '#0b132b',
+            formPurple: '#673ab7',
+            formPurpleDark: '#512da8',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #f4f2f8;
+    }
+    .merdeka-gradient {
+      background: linear-gradient(135deg, #002B7F 0%, #CE1126 100%);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="font-sans text-gray-800 antialiased min-h-screen pb-12">
+
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <div class="p-2.5 merdeka-gradient rounded-xl text-white shadow-md">
+          <i class="fa-solid fa-flag text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-base sm:text-lg text-gray-900 leading-tight">
+            SK BUKIT TONGKAT 2026
+          </h1>
+          <p class="text-xs font-semibold text-merdekaRed">Sambutan Bulan Kebangsaan</p>
+        </div>
+      </div>
+
+      <!-- Navigation Actions -->
+      <div class="flex items-center gap-2 bg-gray-100 p-1 rounded-xl text-xs font-semibold">
+        <button id="tab-form-btn" onclick="switchTab('form')" class="px-3.5 py-2 rounded-lg text-formPurple bg-white shadow-sm transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-pen-to-square"></i> Borang Swafoto
+        </button>
+        <button id="tab-graph-btn" onclick="switchTab('graph')" class="px-3.5 py-2 rounded-lg text-gray-600 hover:text-gray-900 transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-chart-column text-blue-600"></i> Graf Penyertaan
+        </button>
+        <button id="tab-list-btn" onclick="switchTab('list')" class="px-3.5 py-2 rounded-lg text-gray-600 hover:text-gray-900 transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-images text-emerald-600"></i> Senarai Gambar
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notification Toast Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
+  <main class="max-w-3xl mx-auto mt-6 px-4">
+
+    <section id="section-form" class="space-y-4">
+      
+      <!-- Main Header Banner Card -->
+      <div class="bg-white rounded-2xl shadow-sm border-t-[10px] border-formPurple p-6 sm:p-8 relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 opacity-10 pointer-events-none text-merdekaBlue">
+          <i class="fa-solid fa-flag text-9xl"></i>
+        </div>
+        <div class="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold mb-3">
+          🇲🇾 MERDEKA 2026
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight mb-2">
+          PERTANDINGAN SWAFOTO MERDEKA PERINGKAT SK BUKIT TONGKAT 2026
+        </h2>
+        <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
+          Sila isi nama murid, pilih kelas, dan muat naik gambar swafoto bertema Merdeka yang paling kreatif!
+        </p>
+
+        <div class="mt-5 pt-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
+          <span class="text-xs text-red-500 font-medium">* Menunjukkan soalan wajib</span>
+        </div>
+      </div>
+
+      <!-- Main Form -->
+      <form id="merdekaForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+        
+        <!-- Field 1: Nama Murid -->
+        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 transition-all hover:border-purple-300">
+          <label for="studentName" class="block text-base font-semibold text-gray-900 mb-2">
+            Nama Murid <span class="text-red-500">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="studentName" 
+            name="studentName" 
+            required 
+            placeholder="Masukkan nama penuh murid" 
+            class="w-full sm:w-3/4 border-b border-gray-300 focus:border-formPurple outline-none py-2 text-sm transition-colors focus:border-b-2 bg-transparent"
+          >
+        </div>
+
+        <!-- Field 2: Kelas (11 Classes) -->
+        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 transition-all hover:border-purple-300">
+          <label for="studentClass" class="block text-base font-semibold text-gray-900 mb-2">
+            Kelas <span class="text-red-500">*</span>
+          </label>
+          <select 
+            id="studentClass" 
+            name="studentClass" 
+            required 
+            class="w-full sm:w-2/3 border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-formPurple focus:border-formPurple bg-white"
+          >
+            <option value="" disabled selected>-- Pilih Kelas --</option>
+            <option value="1 AR-RAZI">1 AR-RAZI</option>
+            <option value="1 AL-KHAWARIZMI">1 AL-KHAWARIZMI</option>
+            <option value="2 AR-RAZI">2 AR-RAZI</option>
+            <option value="2 AL-KHAWARIZMI">2 AL-KHAWARIZMI</option>
+            <option value="3 AR-RAZI">3 AR-RAZI</option>
+            <option value="3 AL-KHAWARIZMI">3 AL-KHAWARIZMI</option>
+            <option value="4 AR-RAZI">4 AR-RAZI</option>
+            <option value="4 AL-KHAWARIZMI">4 AL-KHAWARIZMI</option>
+            <option value="5 AR-RAZI">5 AR-RAZI</option>
+            <option value="6 AR-RAZI">6 AR-RAZI</option>
+            <option value="6 AL-KHAWARIZMI">6 AL-KHAWARIZMI</option>
+          </select>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 transition-all hover:border-purple-300">
+          <label class="block text-base font-semibold text-gray-900 mb-1">
+            Muat Naik Gambar Swafoto Merdeka <span class="text-red-500">*</span>
+          </label>
+          <p class="text-xs text-gray-500 mb-3">Format fail: JPG, PNG atau WEBP. Saiz maksimum: 5 MB. Gambar akan diperkecilkan secara automatik.</p>
+          
+          <div id="fileUploadContainer" class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-formPurple transition-colors bg-gray-50 cursor-pointer" onclick="document.getElementById('imageFile').click()">
+            <input 
+              type="file" 
+              id="imageFile" 
+              name="imageFile" 
+              accept="image/*" 
+              required 
+              class="hidden" 
+              onchange="handleFileSelect(event)"
+            >
+            <div id="uploadPlaceholder" class="flex flex-col items-center">
+              <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-formPurple mb-2">
+                <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
+              </div>
+              <span class="text-sm font-semibold text-gray-700">Tekan di sini untuk memilih gambar swafoto</span>
+              <span class="text-xs text-gray-400 mt-1">atau seret dan lepas gambar di sini</span>
+            </div>
+
+            <!-- File Selected Preview -->
+            <div id="filePreview" class="hidden flex flex-col sm:flex-row items-center justify-between bg-white p-3 rounded-lg border border-gray-200 text-left">
+              <div class="flex items-center space-x-3 overflow-hidden">
+                <img id="previewImg" src="" alt="Preview" class="w-14 h-14 object-cover rounded-lg border">
+                <div class="truncate">
+                  <p id="fileName" class="text-sm font-semibold text-gray-800 truncate">swafoto.jpg</p>
+                  <p id="fileSize" class="text-xs text-gray-500">0 MB</p>
+                </div>
+              </div>
+              <button type="button" onclick="removeFile(event)" class="mt-2 sm:mt-0 text-xs text-red-500 hover:text-red-700 font-medium px-2.5 py-1.5 rounded bg-red-50 hover:bg-red-100 transition-colors">
+                <i class="fa-solid fa-trash mr-1"></i> Padam Fail
+              </button>
+            </div>
+          </div>
+          <div id="fileError" class="hidden mt-2 text-xs text-red-600 font-medium flex items-center gap-1">
+            <i class="fa-solid fa-circle-exclamation"></i> <span id="fileErrorText"></span>
+          </div>
+        </div>
+
+        <!-- Form Submit Button -->
+        <div class="flex items-center justify-between pt-2">
+          <button 
+            type="submit" 
+            id="submitBtn"
+            class="bg-formPurple hover:bg-formPurpleDark text-white font-semibold px-7 py-3 rounded-xl text-sm shadow-md transition-all flex items-center gap-2"
+          >
+            <i class="fa-solid fa-paper-plane"></i> <span>Hantar Penyertaan Swafoto</span>
+          </button>
+          <button 
+            type="button" 
+            onclick="resetForm()" 
+            class="text-gray-500 hover:text-gray-700 text-xs font-medium px-3 py-2 rounded"
+          >
+            Kosongkan Borang
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+    <section id="section-graph" class="hidden space-y-4">
+      
+      <!-- Graph Header Card -->
+      <div class="bg-white rounded-2xl shadow-sm p-6 border-t-8 border-blue-600">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+          <div>
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-chart-column text-blue-600 text-2xl"></i>
+              <h2 class="text-xl font-bold text-gray-900">Graf Penyertaan Murid Mengikut Kelas</h2>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">
+              Analisis bilangan dan peratusan murid yang telah menyertai Pertandingan Swafoto Merdeka 2026.
+            </p>
+          </div>
+          
+          <button onclick="refreshGraphData()" class="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold rounded-lg border border-blue-200 transition-colors flex items-center gap-1.5 self-start sm:self-auto">
+            <i class="fa-solid fa-arrows-rotate"></i> Kemaskini Graf
+          </button>
+        </div>
+
+        <!-- Participation Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div class="bg-blue-50/70 border border-blue-100 rounded-xl p-4 text-center">
+            <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">Jumlah Peserta (Murid)</p>
+            <p id="stat-total" class="text-3xl font-extrabold text-blue-900">0 Murid</p>
+          </div>
+          <div class="bg-purple-50/70 border border-purple-100 rounded-xl p-4 text-center">
+            <p class="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-1">Kelas Tertinggi</p>
+            <p id="stat-top-class" class="text-lg font-bold text-purple-900 truncate">-</p>
+          </div>
+          <div class="bg-emerald-50/70 border border-emerald-100 rounded-xl p-4 text-center">
+            <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-1">Jumlah Kelas Terlibat</p>
+            <p id="stat-active-classes" class="text-3xl font-extrabold text-emerald-900">0 / 11</p>
+          </div>
+        </div>
+
+        <!-- Chart Container -->
+        <div class="relative w-full bg-gray-50 rounded-xl p-4 border border-gray-200 h-80 sm:h-96 mb-6">
+          <canvas id="participationChart"></canvas>
+        </div>
+
+        <!-- Detailed Breakdown Grid by Class -->
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+          <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-list-ol text-blue-600"></i> Ringkasan Bilangan Peserta Mengikut Kelas
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="classBreakdownList">
+            <!-- Dynamic class counts injected via JS -->
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <section id="section-list" class="hidden space-y-4">
+      <div class="bg-white rounded-2xl shadow-sm p-6 border-t-8 border-emerald-600">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-images text-emerald-600 text-2xl"></i>
+              <h2 class="text-xl font-bold text-gray-900">Senarai Penyertaan Swafoto</h2>
+            </div>
+            <p class="text-xs text-gray-500 mt-0.5">Senarai rekod murid yang telah menghantar penyertaan.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="exportToCSV()" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-lg border border-emerald-200 transition-colors flex items-center gap-1.5">
+              <i class="fa-solid fa-download"></i> Eksport CSV
+            </button>
+            <button onclick="clearAllData()" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-lg border border-red-200 transition-colors flex items-center gap-1.5">
+              <i class="fa-solid fa-trash"></i> Kosongkan
+            </button>
+          </div>
+        </div>
+
+        <!-- Submissions Table -->
+        <div class="overflow-x-auto border border-gray-200 rounded-xl custom-scrollbar">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-merdekaBlue text-white font-semibold">
+                <th class="p-3 border-r border-blue-800 w-12 text-center">#</th>
+                <th class="p-3 border-r border-blue-800 whitespace-nowrap">Cap Masa</th>
+                <th class="p-3 border-r border-blue-800 whitespace-nowrap">Gambar Swafoto</th>
+                <th class="p-3 border-r border-blue-800 whitespace-nowrap">Nama Murid</th>
+                <th class="p-3 border-r border-blue-800 whitespace-nowrap">Kelas</th>
+                <th class="p-3 whitespace-nowrap text-center">Tindakan</th>
+              </tr>
+            </thead>
+            <tbody id="entriesTableBody" class="divide-y divide-gray-200 bg-white">
+              <!-- Dynamic Rows inserted via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="emptyMessage" class="py-12 text-center text-gray-400">
+          <i class="fa-solid fa-camera-retro text-4xl mb-2"></i>
+          <p class="text-sm font-medium">Belum ada penyertaan swafoto direkodkan.</p>
+          <p class="text-xs text-gray-400 mt-1">Sila hantar borang untuk melihat data murid di sini.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // WAJIB: Gantikan dengan URL deployment Google Apps Script yang berakhir dengan /exec
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw2G57ZzzOnmu5brouVdT9LIVzIqYFe0PNOGhYbB_AOjbdL7hIi83UI5SNM1sPan1yW/exec";
+
+    // Senarai kelas rasmi
+    const ALL_CLASSES = [
+      "1 AR-RAZI", "1 AL-KHAWARIZMI",
+      "2 AR-RAZI", "2 AL-KHAWARIZMI",
+      "3 AR-RAZI", "3 AL-KHAWARIZMI",
+      "4 AR-RAZI", "4 AL-KHAWARIZMI",
+      "5 AR-RAZI",
+      "6 AR-RAZI", "6 AL-KHAWARIZMI"
+    ];
+
+    // App State
+    let selectedFile = null;
+    let submissions = [];
+    let chartInstance = null;
+
+    window.onload = async function() {
+      renderTable();
+      initChart();
+      updateGraph();
+      await loadSubmissions(false);
+    };
+
+    function switchTab(tab) {
+      const formSec = document.getElementById('section-form');
+      const graphSec = document.getElementById('section-graph');
+      const listSec = document.getElementById('section-list');
+
+      const formBtn = document.getElementById('tab-form-btn');
+      const graphBtn = document.getElementById('tab-graph-btn');
+      const listBtn = document.getElementById('tab-list-btn');
+
+      // Hide all
+      formSec.classList.add('hidden');
+      graphSec.classList.add('hidden');
+      listSec.classList.add('hidden');
+
+      // Reset Styles
+      [formBtn, graphBtn, listBtn].forEach(btn => {
+        btn.className = "px-3.5 py-2 rounded-lg text-gray-600 hover:text-gray-900 transition-all flex items-center gap-1.5";
+      });
+
+      if (tab === 'form') {
+        formSec.classList.remove('hidden');
+        formBtn.className = "px-3.5 py-2 rounded-lg text-formPurple bg-white shadow-sm transition-all flex items-center gap-1.5";
+      } else if (tab === 'graph') {
+        graphSec.classList.remove('hidden');
+        graphBtn.className = "px-3.5 py-2 rounded-lg text-blue-600 bg-white shadow-sm transition-all flex items-center gap-1.5";
+        refreshGraphData();
+      } else if (tab === 'list') {
+        listSec.classList.remove('hidden');
+        listBtn.className = "px-3.5 py-2 rounded-lg text-emerald-600 bg-white shadow-sm transition-all flex items-center gap-1.5";
+      }
+    }
+
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      const fileError = document.getElementById('fileError');
+      const fileErrorText = document.getElementById('fileErrorText');
+
+      fileError.classList.add('hidden');
+
+      if (!file) return;
+
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        showToast('Format gambar tidak dibenarkan!', 'error');
+        fileErrorText.innerText = 'Gunakan gambar JPG, PNG atau WebP.';
+        fileError.classList.remove('hidden');
+        removeFile(event);
+        return;
+      }
+
+      const max5MB = 5 * 1024 * 1024;
+      if (file.size > max5MB) {
+        showToast('Saiz gambar melebihi had 5 MB!', 'error');
+        fileErrorText.innerText = 'Sila pilih gambar yang bersaiz 5 MB atau lebih kecil.';
+        fileError.classList.remove('hidden');
+        removeFile(event);
+        return;
+      }
+
+      selectedFile = file;
+      document.getElementById('uploadPlaceholder').classList.add('hidden');
+      document.getElementById('filePreview').classList.remove('hidden');
+
+      document.getElementById('fileName').innerText = file.name;
+      document.getElementById('fileSize').innerText = formatBytes(file.size);
+
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('previewImg').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        document.getElementById('previewImg').src = 'https://placehold.co/100x100/CE1126/ffffff?text=GAMBAR';
+      }
+    }
+
+    function removeFile(event) {
+      if (event) event.stopPropagation();
+      selectedFile = null;
+      document.getElementById('imageFile').value = '';
+      document.getElementById('uploadPlaceholder').classList.remove('hidden');
+      document.getElementById('filePreview').classList.add('hidden');
+    }
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    async function handleFormSubmit(event) {
+      event.preventDefault();
+
+      const name = document.getElementById('studentName').value.trim();
+      const studentClass = document.getElementById('studentClass').value;
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (!name || !studentClass || !selectedFile) {
+        showToast('Sila lengkapkan semua ruangan wajib!', 'error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Menyimpan Penyertaan...</span>`;
+
+      try {
+        validateWebAppUrl();
+        const imageBase64 = await compressImage(selectedFile);
+        const result = await postToWebApp({
+          action: 'submit',
+          studentName: name,
+          studentClass: studentClass,
+          imageBase64: imageBase64,
+          fileName: selectedFile.name
+        });
+
+        if (result.result !== 'success') throw new Error(result.message || 'Penyertaan gagal disimpan.');
+        showToast(result.message, 'success');
+        resetForm();
+        await loadSubmissions(false);
+
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || 'Penyertaan gagal dihantar.', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span>Hantar Penyertaan Swafoto</span>`;
+      }
+    }
+
+    function convertFileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    function compressImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('Gambar tidak dapat dibaca.'));
+        reader.onload = () => {
+          const img = new Image();
+          img.onerror = () => reject(new Error('Format gambar tidak dapat diproses.'));
+          img.onload = () => {
+            const maxSide = 1600;
+            const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(img.width * scale));
+            canvas.height = Math.max(1, Math.round(img.height * scale));
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', 0.82));
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function validateWebAppUrl() {
+      if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(WEB_APP_URL)) {
+        throw new Error('Masukkan URL Web App Google Apps Script yang betul dalam WEB_APP_URL.');
+      }
+    }
+
+    async function postToWebApp(payload) {
+      const response = await fetch(WEB_APP_URL, {
+        method: 'POST',
+        redirect: 'follow',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) throw new Error('Pelayan tidak dapat dihubungi. Semak deployment Web App.');
+      return response.json();
+    }
+
+    function getJsonp(params = {}) {
+      validateWebAppUrl();
+      return new Promise((resolve, reject) => {
+        const callbackName = '__swafotoCallback_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+        const script = document.createElement('script');
+        const timeout = setTimeout(() => cleanup(new Error('Masa mendapatkan data tamat.')), 20000);
+
+        function cleanup(error, data) {
+          clearTimeout(timeout);
+          delete window[callbackName];
+          script.remove();
+          error ? reject(error) : resolve(data);
+        }
+
+        window[callbackName] = data => cleanup(null, data);
+        const query = new URLSearchParams({ ...params, callback: callbackName, t: Date.now() });
+        script.onerror = () => cleanup(new Error('Data Google Sheets tidak dapat dibaca.'));
+        script.src = WEB_APP_URL + '?' + query.toString();
+        document.body.appendChild(script);
+      });
+    }
+
+    async function loadSubmissions(showMessage = true) {
+      try {
+        const result = await getJsonp({ action: 'list' });
+        if (result.result !== 'success') throw new Error(result.message || 'Data gagal dibaca.');
+        submissions = Array.isArray(result.entries) ? result.entries : [];
+        renderTable();
+        updateGraph();
+        if (showMessage) showToast('Data penyertaan berjaya dikemas kini!', 'info');
+      } catch (error) {
+        console.error(error);
+        showToast(error.message || 'Data penyertaan gagal dibaca.', 'error');
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('merdekaForm').reset();
+      removeFile();
+    }
+
+    function initChart() {
+      const ctx = document.getElementById('participationChart').getContext('2d');
+
+      // Register datalabels plugin if available
+      const pluginsList = (typeof ChartDataLabels !== 'undefined') ? [ChartDataLabels] : [];
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        plugins: pluginsList,
+        data: {
+          labels: ALL_CLASSES,
+          datasets: [{
+            label: 'Bilangan Peserta (Murid)',
+            data: ALL_CLASSES.map(() => 0),
+            backgroundColor: '#002B7F',
+            borderColor: '#CE1126',
+            borderWidth: 1.5,
+            borderRadius: 6,
+            hoverBackgroundColor: '#CE1126'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+            padding: {
+              top: 25
+            }
+          },
+          plugins: {
+            datalabels: {
+              anchor: 'end',
+              align: 'top',
+              formatter: function(value) {
+                return value > 0 ? value + ' murid' : '0';
+              },
+              font: { family: 'Inter', size: 11, weight: 'bold' },
+              color: '#002B7F'
+            },
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                font: { family: 'Inter', size: 12, weight: '600' }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const val = context.raw || 0;
+                  const total = submissions.length;
+                  const percentage = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                  return ` Bilangan Peserta: ${val} murid (${percentage}%)`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1, font: { family: 'Inter' } },
+              title: { display: true, text: 'Bilangan Murid', font: { family: 'Inter', weight: 'bold' } }
+            },
+            x: {
+              ticks: { font: { family: 'Inter', size: 10 }, maxRotation: 45 },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    function updateGraph() {
+      if (!chartInstance) return;
+
+      // Calculate counts for each class
+      const classCounts = ALL_CLASSES.map(cls => {
+        return submissions.filter(item => item.class === cls).length;
+      });
+
+      chartInstance.data.datasets[0].data = classCounts;
+      chartInstance.update();
+
+      // Update Statistics Cards
+      const total = submissions.length;
+      document.getElementById('stat-total').innerText = `${total} Murid`;
+
+      const activeClassesCount = classCounts.filter(cnt => cnt > 0).length;
+      document.getElementById('stat-active-classes').innerText = `${activeClassesCount} / ${ALL_CLASSES.length}`;
+
+      if (total === 0) {
+        document.getElementById('stat-top-class').innerText = '-';
+      } else {
+        let maxVal = -1;
+        let topClassIndex = -1;
+        classCounts.forEach((cnt, idx) => {
+          if (cnt > maxVal) {
+            maxVal = cnt;
+            topClassIndex = idx;
+          }
+        });
+        document.getElementById('stat-top-class').innerText = `${ALL_CLASSES[topClassIndex]} (${maxVal} murid)`;
+      }
+
+      // Render Detailed Class Breakdown Cards
+      const breakdownContainer = document.getElementById('classBreakdownList');
+      if (breakdownContainer) {
+        breakdownContainer.innerHTML = '';
+        ALL_CLASSES.forEach((cls, idx) => {
+          const count = classCounts[idx];
+          const pct = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+          
+          const card = document.createElement('div');
+          card.className = 'bg-white p-3 rounded-lg border border-gray-200 shadow-sm flex items-center justify-between text-xs';
+          card.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full ${count > 0 ? 'bg-emerald-500' : 'bg-gray-300'}"></span>
+              <span class="font-bold text-gray-800">${cls}</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-20 bg-gray-200 rounded-full h-2 overflow-hidden hidden sm:block">
+                <div class="bg-blue-600 h-2 rounded-full" style="width: ${pct}%"></div>
+              </div>
+              <span class="font-extrabold text-blue-900 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-100">
+                ${count} murid <span class="text-gray-400 font-normal">(${pct}%)</span>
+              </span>
+            </div>
+          `;
+          breakdownContainer.appendChild(card);
+        });
+      }
+    }
+
+    async function refreshGraphData() {
+      await loadSubmissions(true);
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('entriesTableBody');
+      const emptyMsg = document.getElementById('emptyMessage');
+
+      tbody.innerHTML = '';
+
+      if (submissions.length === 0) {
+        emptyMsg.classList.remove('hidden');
+        return;
+      }
+
+      emptyMsg.classList.add('hidden');
+
+      submissions.forEach((row, index) => {
+        const tr = document.createElement('tr');
+        tr.className = index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50/50 hover:bg-gray-100';
+
+        tr.innerHTML = `
+          <td class="p-3 border-r text-center font-semibold text-gray-500">${submissions.length - index}</td>
+          <td class="p-3 border-r whitespace-nowrap text-gray-600">${row.timestamp}</td>
+          <td class="p-3 border-r whitespace-nowrap">
+            <a href="${escapeHtml(row.driveUrl || row.imageUrl)}" target="_blank" rel="noopener noreferrer">
+              <img src="${escapeHtml(row.imageUrl)}" alt="Swafoto ${escapeHtml(row.name)}" class="w-12 h-12 object-cover rounded-lg border shadow-sm cursor-pointer hover:opacity-80 transition-opacity" loading="lazy">
+            </a>
+          </td>
+          <td class="p-3 border-r font-bold text-gray-900">${escapeHtml(row.name)}</td>
+          <td class="p-3 border-r whitespace-nowrap">
+            <span class="bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full text-[11px] font-bold">${escapeHtml(row.class)}</span>
+          </td>
+          <td class="p-3 text-center">
+            <button onclick="deleteEntry('${encodeURIComponent(row.id)}')" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors" title="Padam Rekod">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function deleteEntry(encodedId) {
+      const adminPin = prompt('Masukkan PIN pentadbir untuk memadam rekod:');
+      if (adminPin === null) return;
+      try {
+        const result = await postToWebApp({ action: 'delete', id: decodeURIComponent(encodedId), adminPin });
+        if (result.result !== 'success') throw new Error(result.message);
+        showToast(result.message, 'success');
+        await loadSubmissions(false);
+      } catch (error) {
+        showToast(error.message || 'Rekod gagal dipadam.', 'error');
+      }
+    }
+
+    async function clearAllData() {
+      if (submissions.length === 0) return;
+      if (!confirm('Padam semua rekod dan gambar? Tindakan ini tidak boleh dibatalkan.')) return;
+      const adminPin = prompt('Masukkan PIN pentadbir:');
+      if (adminPin === null) return;
+      try {
+        const result = await postToWebApp({ action: 'clear', adminPin });
+        if (result.result !== 'success') throw new Error(result.message);
+        showToast(result.message, 'success');
+        await loadSubmissions(false);
+      } catch (error) {
+        showToast(error.message || 'Semua rekod gagal dipadam.', 'error');
+      }
+    }
+
+    function exportToCSV() {
+      if (submissions.length === 0) {
+        showToast('Tiada rekod untuk dieksport!', 'error');
+        return;
+      }
+
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "ID,Cap Masa,Nama Murid,Kelas,Nama Fail Gambar\n";
+
+      submissions.forEach(row => {
+        csvContent += `"${row.id}","${row.timestamp}","${row.name}","${row.class}","${row.fileName}"\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `penyertaan_swafoto_merdeka_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+
+      let bg = 'bg-gray-800 text-white';
+      let icon = 'fa-info-circle';
+
+      if (type === 'success') {
+        bg = 'bg-emerald-600 text-white';
+        icon = 'fa-circle-check';
+      } else if (type === 'error') {
+        bg = 'bg-red-600 text-white';
+        icon = 'fa-circle-exclamation';
+      }
+
+      toast.className = `${bg} px-4 py-3 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 max-w-xs`;
+      toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${escapeHtml(message)}</span>`;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
