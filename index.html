@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Pertandingan Swafoto Merdeka Peringkat SK Bukit Tongkat 2026</title>
 
   <!-- Tailwind CSS -->
@@ -70,15 +73,15 @@
       </div>
 
       <!-- Navigation Actions -->
-      <div class="flex items-center gap-2 bg-gray-100 p-1 rounded-xl text-xs font-semibold">
+      <div class="flex flex-wrap items-center justify-center gap-2 bg-gray-100 p-1 rounded-xl text-xs font-semibold">
         <button id="tab-form-btn" onclick="switchTab('form')" class="px-3.5 py-2 rounded-lg text-formPurple bg-white shadow-sm transition-all flex items-center gap-1.5">
           <i class="fa-solid fa-pen-to-square"></i> Borang Swafoto
         </button>
         <button id="tab-graph-btn" onclick="switchTab('graph')" class="px-3.5 py-2 rounded-lg text-gray-600 hover:text-gray-900 transition-all flex items-center gap-1.5">
           <i class="fa-solid fa-chart-column text-blue-600"></i> Graf Penyertaan
         </button>
-        <button id="tab-list-btn" onclick="switchTab('list')" class="px-3.5 py-2 rounded-lg text-gray-600 hover:text-gray-900 transition-all flex items-center gap-1.5">
-          <i class="fa-solid fa-images text-emerald-600"></i> Senarai Gambar
+        <button id="tab-admin-btn" onclick="switchTab('admin')" class="px-3.5 py-2 rounded-lg text-gray-600 hover:text-gray-900 transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-user-shield text-amber-600"></i> Dashboard Admin
         </button>
       </div>
     </div>
@@ -273,49 +276,98 @@
 
     </section>
 
-    <section id="section-list" class="hidden space-y-4">
-      <div class="bg-white rounded-2xl shadow-sm p-6 border-t-8 border-emerald-600">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+    <!-- Dashboard Admin -->
+    <section id="section-admin" class="hidden space-y-4">
+      <div id="admin-login-card" class="bg-white rounded-2xl shadow-sm p-6 sm:p-8 border-t-8 border-amber-500 max-w-md mx-auto">
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 mx-auto rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-3">
+            <i class="fa-solid fa-user-shield text-3xl"></i>
+          </div>
+          <h2 class="text-xl font-extrabold text-gray-900">Log Masuk Pentadbir</h2>
+          <p class="text-xs text-gray-500 mt-1">Masukkan PIN pentadbir yang ditetapkan dalam Google Apps Script.</p>
+        </div>
+        <form onsubmit="adminLogin(event)" class="space-y-4">
           <div>
-            <div class="flex items-center gap-2">
-              <i class="fa-solid fa-images text-emerald-600 text-2xl"></i>
-              <h2 class="text-xl font-bold text-gray-900">Senarai Penyertaan Swafoto</h2>
+            <label for="adminPinInput" class="block text-sm font-semibold text-gray-800 mb-2">PIN Pentadbir</label>
+            <div class="relative">
+              <i class="fa-solid fa-lock absolute left-3 top-3 text-gray-400"></i>
+              <input id="adminPinInput" type="password" inputmode="numeric" autocomplete="current-password" required
+                class="w-full border border-gray-300 rounded-xl py-2.5 pl-10 pr-3 text-sm outline-none focus:ring-2 focus:ring-amber-400"
+                placeholder="Masukkan PIN">
             </div>
-            <p class="text-xs text-gray-500 mt-0.5">Senarai rekod murid yang telah menghantar penyertaan.</p>
           </div>
-          <div class="flex items-center gap-2">
-            <button onclick="exportToCSV()" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-lg border border-emerald-200 transition-colors flex items-center gap-1.5">
-              <i class="fa-solid fa-download"></i> Eksport CSV
-            </button>
-            <button onclick="clearAllData()" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-lg border border-red-200 transition-colors flex items-center gap-1.5">
-              <i class="fa-solid fa-trash"></i> Kosongkan
-            </button>
+          <button id="adminLoginBtn" type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl shadow-sm transition-colors">
+            <i class="fa-solid fa-right-to-bracket mr-2"></i> Log Masuk
+          </button>
+        </form>
+      </div>
+
+      <div id="admin-dashboard" class="hidden space-y-4">
+        <div class="bg-white rounded-2xl shadow-sm p-5 border-t-8 border-amber-500">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 class="text-xl font-extrabold text-gray-900 flex items-center gap-2">
+                <i class="fa-solid fa-gauge-high text-amber-500"></i> Dashboard Pentadbir
+              </h2>
+              <p class="text-xs text-gray-500 mt-1">Pemantauan penyertaan dan pengurusan gambar Swafoto Merdeka 2026.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="refreshAdminDashboard()" class="px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-semibold">
+                <i class="fa-solid fa-rotate"></i> Kemas Kini
+              </button>
+              <button onclick="exportToCSV()" class="px-3 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-semibold">
+                <i class="fa-solid fa-download"></i> Eksport CSV
+              </button>
+              <button onclick="adminLogout()" class="px-3 py-2 bg-gray-100 text-gray-700 border border-gray-200 rounded-lg text-xs font-semibold">
+                <i class="fa-solid fa-right-from-bracket"></i> Log Keluar
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Submissions Table -->
-        <div class="overflow-x-auto border border-gray-200 rounded-xl custom-scrollbar">
-          <table class="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr class="bg-merdekaBlue text-white font-semibold">
-                <th class="p-3 border-r border-blue-800 w-12 text-center">#</th>
-                <th class="p-3 border-r border-blue-800 whitespace-nowrap">Cap Masa</th>
-                <th class="p-3 border-r border-blue-800 whitespace-nowrap">Gambar Swafoto</th>
-                <th class="p-3 border-r border-blue-800 whitespace-nowrap">Nama Murid</th>
-                <th class="p-3 border-r border-blue-800 whitespace-nowrap">Kelas</th>
-                <th class="p-3 whitespace-nowrap text-center">Tindakan</th>
-              </tr>
-            </thead>
-            <tbody id="entriesTableBody" class="divide-y divide-gray-200 bg-white">
-              <!-- Dynamic Rows inserted via JS -->
-            </tbody>
-          </table>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="bg-blue-600 text-white rounded-xl p-4 shadow-sm">
+            <p class="text-[11px] font-semibold opacity-80 uppercase">Jumlah Penyertaan</p>
+            <p id="admin-total" class="text-3xl font-extrabold mt-1">0</p>
+          </div>
+          <div class="bg-emerald-600 text-white rounded-xl p-4 shadow-sm">
+            <p class="text-[11px] font-semibold opacity-80 uppercase">Kelas Terlibat</p>
+            <p id="admin-active-classes" class="text-3xl font-extrabold mt-1">0</p>
+          </div>
+          <div class="bg-purple-600 text-white rounded-xl p-4 shadow-sm">
+            <p class="text-[11px] font-semibold opacity-80 uppercase">Kelas Tertinggi</p>
+            <p id="admin-top-class" class="text-base font-extrabold mt-2 truncate">-</p>
+          </div>
+          <div class="bg-amber-500 text-white rounded-xl p-4 shadow-sm">
+            <p class="text-[11px] font-semibold opacity-80 uppercase">Hari Ini</p>
+            <p id="admin-today" class="text-3xl font-extrabold mt-1">0</p>
+          </div>
         </div>
 
-        <div id="emptyMessage" class="py-12 text-center text-gray-400">
-          <i class="fa-solid fa-camera-retro text-4xl mb-2"></i>
-          <p class="text-sm font-medium">Belum ada penyertaan swafoto direkodkan.</p>
-          <p class="text-xs text-gray-400 mt-1">Sila hantar borang untuk melihat data murid di sini.</p>
+        <div class="bg-white rounded-2xl shadow-sm p-5">
+          <div class="flex flex-col md:flex-row gap-3 mb-5">
+            <div class="relative flex-1">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400"></i>
+              <input id="adminSearch" type="search" oninput="renderAdminDashboard()" placeholder="Cari nama murid..."
+                class="w-full border border-gray-300 rounded-xl py-2.5 pl-10 pr-3 text-sm outline-none focus:ring-2 focus:ring-amber-400">
+            </div>
+            <select id="adminClassFilter" onchange="renderAdminDashboard()" class="border border-gray-300 rounded-xl px-3 py-2.5 text-sm bg-white outline-none focus:ring-2 focus:ring-amber-400">
+              <option value="">Semua Kelas</option>
+            </select>
+            <button onclick="clearAllDataAdmin()" class="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold">
+              <i class="fa-solid fa-trash"></i> Padam Semua
+            </button>
+          </div>
+
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-bold text-gray-900"><i class="fa-solid fa-images text-emerald-600 mr-1"></i> Senarai Gambar Penyertaan</h3>
+            <span id="admin-result-count" class="text-xs font-semibold text-gray-500">0 gambar</span>
+          </div>
+          <div id="admin-gallery" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+          <div id="admin-empty" class="hidden py-12 text-center text-gray-400">
+            <i class="fa-solid fa-image text-4xl mb-2"></i>
+            <p class="text-sm font-medium">Tiada gambar ditemui.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -340,9 +392,10 @@
     let selectedFile = null;
     let submissions = [];
     let chartInstance = null;
+    let adminAuthenticated = false;
+    let adminPinSession = '';
 
     window.onload = async function() {
-      renderTable();
       initChart();
       updateGraph();
       await loadSubmissions(false);
@@ -351,19 +404,19 @@
     function switchTab(tab) {
       const formSec = document.getElementById('section-form');
       const graphSec = document.getElementById('section-graph');
-      const listSec = document.getElementById('section-list');
+      const adminSec = document.getElementById('section-admin');
 
       const formBtn = document.getElementById('tab-form-btn');
       const graphBtn = document.getElementById('tab-graph-btn');
-      const listBtn = document.getElementById('tab-list-btn');
+      const adminBtn = document.getElementById('tab-admin-btn');
 
       // Hide all
       formSec.classList.add('hidden');
       graphSec.classList.add('hidden');
-      listSec.classList.add('hidden');
+      adminSec.classList.add('hidden');
 
       // Reset Styles
-      [formBtn, graphBtn, listBtn].forEach(btn => {
+      [formBtn, graphBtn, adminBtn].forEach(btn => {
         btn.className = "px-3.5 py-2 rounded-lg text-gray-600 hover:text-gray-900 transition-all flex items-center gap-1.5";
       });
 
@@ -374,9 +427,10 @@
         graphSec.classList.remove('hidden');
         graphBtn.className = "px-3.5 py-2 rounded-lg text-blue-600 bg-white shadow-sm transition-all flex items-center gap-1.5";
         refreshGraphData();
-      } else if (tab === 'list') {
-        listSec.classList.remove('hidden');
-        listBtn.className = "px-3.5 py-2 rounded-lg text-emerald-600 bg-white shadow-sm transition-all flex items-center gap-1.5";
+      } else if (tab === 'admin') {
+        adminSec.classList.remove('hidden');
+        adminBtn.className = "px-3.5 py-2 rounded-lg text-amber-600 bg-white shadow-sm transition-all flex items-center gap-1.5";
+        if (adminAuthenticated) renderAdminDashboard();
       }
     }
 
@@ -556,8 +610,8 @@
         const result = await getJsonp({ action: 'list' });
         if (result.result !== 'success') throw new Error(result.message || 'Data gagal dibaca.');
         submissions = Array.isArray(result.entries) ? result.entries : [];
-        renderTable();
         updateGraph();
+        if (adminAuthenticated) renderAdminDashboard();
         if (showMessage) showToast('Data penyertaan berjaya dikemas kini!', 'info');
       } catch (error) {
         console.error(error);
@@ -707,50 +761,118 @@
       await loadSubmissions(true);
     }
 
-    function renderTable() {
-      const tbody = document.getElementById('entriesTableBody');
-      const emptyMsg = document.getElementById('emptyMessage');
+    async function adminLogin(event) {
+      event.preventDefault();
+      const input = document.getElementById('adminPinInput');
+      const button = document.getElementById('adminLoginBtn');
+      const pin = input.value.trim();
+      if (!pin) return;
 
-      tbody.innerHTML = '';
-
-      if (submissions.length === 0) {
-        emptyMsg.classList.remove('hidden');
-        return;
+      button.disabled = true;
+      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Menyemak...';
+      try {
+        const result = await postToWebApp({ action: 'verify', adminPin: pin });
+        if (result.result !== 'success') throw new Error(result.message || 'PIN pentadbir tidak betul.');
+        adminAuthenticated = true;
+        adminPinSession = pin;
+        input.value = '';
+        document.getElementById('admin-login-card').classList.add('hidden');
+        document.getElementById('admin-dashboard').classList.remove('hidden');
+        await loadSubmissions(false);
+        renderAdminDashboard();
+        showToast('Log masuk pentadbir berjaya.', 'success');
+      } catch (error) {
+        showToast(error.message || 'Log masuk gagal.', 'error');
+      } finally {
+        button.disabled = false;
+        button.innerHTML = '<i class="fa-solid fa-right-to-bracket mr-2"></i> Log Masuk';
       }
+    }
 
-      emptyMsg.classList.add('hidden');
+    function adminLogout() {
+      adminAuthenticated = false;
+      adminPinSession = '';
+      document.getElementById('admin-dashboard').classList.add('hidden');
+      document.getElementById('admin-login-card').classList.remove('hidden');
+      showToast('Pentadbir telah log keluar.', 'info');
+    }
 
-      submissions.forEach((row, index) => {
-        const tr = document.createElement('tr');
-        tr.className = index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50/50 hover:bg-gray-100';
-
-        tr.innerHTML = `
-          <td class="p-3 border-r text-center font-semibold text-gray-500">${submissions.length - index}</td>
-          <td class="p-3 border-r whitespace-nowrap text-gray-600">${row.timestamp}</td>
-          <td class="p-3 border-r whitespace-nowrap">
-            <a href="${escapeHtml(row.driveUrl || row.imageUrl)}" target="_blank" rel="noopener noreferrer">
-              <img src="${escapeHtml(row.imageUrl)}" alt="Swafoto ${escapeHtml(row.name)}" class="w-12 h-12 object-cover rounded-lg border shadow-sm cursor-pointer hover:opacity-80 transition-opacity" loading="lazy">
-            </a>
-          </td>
-          <td class="p-3 border-r font-bold text-gray-900">${escapeHtml(row.name)}</td>
-          <td class="p-3 border-r whitespace-nowrap">
-            <span class="bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full text-[11px] font-bold">${escapeHtml(row.class)}</span>
-          </td>
-          <td class="p-3 text-center">
-            <button onclick="deleteEntry('${encodeURIComponent(row.id)}')" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors" title="Padam Rekod">
-              <i class="fa-solid fa-trash-can"></i>
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
+    function setupAdminClassFilter() {
+      const select = document.getElementById('adminClassFilter');
+      if (select.options.length > 1) return;
+      ALL_CLASSES.forEach(cls => {
+        const option = document.createElement('option');
+        option.value = cls;
+        option.textContent = cls;
+        select.appendChild(option);
       });
     }
 
-    async function deleteEntry(encodedId) {
-      const adminPin = prompt('Masukkan PIN pentadbir untuk memadam rekod:');
-      if (adminPin === null) return;
+    function renderAdminDashboard() {
+      if (!adminAuthenticated) return;
+      setupAdminClassFilter();
+
+      const counts = ALL_CLASSES.map(cls => submissions.filter(item => item.class === cls).length);
+      const active = counts.filter(count => count > 0).length;
+      const max = counts.length ? Math.max(...counts) : 0;
+      const topIndex = counts.indexOf(max);
+      const today = new Date().toLocaleDateString('ms-MY');
+      const todayCount = submissions.filter(item => String(item.timestamp || '').startsWith(today)).length;
+
+      document.getElementById('admin-total').textContent = submissions.length;
+      document.getElementById('admin-active-classes').textContent = active;
+      document.getElementById('admin-top-class').textContent = max > 0 ? `${ALL_CLASSES[topIndex]} (${max})` : '-';
+      document.getElementById('admin-today').textContent = todayCount;
+
+      const search = document.getElementById('adminSearch').value.trim().toLowerCase();
+      const selectedClass = document.getElementById('adminClassFilter').value;
+      const filtered = submissions.filter(item => {
+        const matchesName = !search || String(item.name || '').toLowerCase().includes(search);
+        const matchesClass = !selectedClass || item.class === selectedClass;
+        return matchesName && matchesClass;
+      });
+
+      const gallery = document.getElementById('admin-gallery');
+      const empty = document.getElementById('admin-empty');
+      document.getElementById('admin-result-count').textContent = `${filtered.length} gambar`;
+      gallery.innerHTML = '';
+      empty.classList.toggle('hidden', filtered.length !== 0);
+
+      filtered.forEach(row => {
+        const card = document.createElement('article');
+        card.className = 'overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm';
+        card.innerHTML = `
+          <a href="${escapeHtml(row.driveUrl || row.imageUrl)}" target="_blank" rel="noopener noreferrer" class="block bg-gray-100 aspect-[4/3] overflow-hidden">
+            <img src="${escapeHtml(row.imageUrl)}" alt="Swafoto ${escapeHtml(row.name)}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" loading="lazy">
+          </a>
+          <div class="p-3">
+            <p class="font-bold text-sm text-gray-900 truncate" title="${escapeHtml(row.name)}">${escapeHtml(row.name)}</p>
+            <div class="flex items-center justify-between gap-2 mt-1">
+              <span class="text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded-full">${escapeHtml(row.class)}</span>
+              <span class="text-[10px] text-gray-500">${escapeHtml(row.timestamp)}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 mt-3">
+              <a href="${escapeHtml(row.driveUrl || row.imageUrl)}" target="_blank" rel="noopener noreferrer" class="text-center px-2 py-2 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200">
+                <i class="fa-solid fa-eye"></i> Lihat
+              </a>
+              <button onclick="deleteEntryAdmin('${encodeURIComponent(row.id)}')" class="px-2 py-2 rounded-lg bg-red-50 text-red-600 text-xs font-semibold border border-red-200">
+                <i class="fa-solid fa-trash"></i> Padam
+              </button>
+            </div>
+          </div>`;
+        gallery.appendChild(card);
+      });
+    }
+
+    async function refreshAdminDashboard() {
+      await loadSubmissions(false);
+      showToast('Dashboard pentadbir berjaya dikemas kini.', 'info');
+    }
+
+    async function deleteEntryAdmin(encodedId) {
+      if (!confirm('Padam rekod dan gambar ini?')) return;
       try {
-        const result = await postToWebApp({ action: 'delete', id: decodeURIComponent(encodedId), adminPin });
+        const result = await postToWebApp({ action: 'delete', id: decodeURIComponent(encodedId), adminPin: adminPinSession });
         if (result.result !== 'success') throw new Error(result.message);
         showToast(result.message, 'success');
         await loadSubmissions(false);
@@ -759,13 +881,11 @@
       }
     }
 
-    async function clearAllData() {
+    async function clearAllDataAdmin() {
       if (submissions.length === 0) return;
       if (!confirm('Padam semua rekod dan gambar? Tindakan ini tidak boleh dibatalkan.')) return;
-      const adminPin = prompt('Masukkan PIN pentadbir:');
-      if (adminPin === null) return;
       try {
-        const result = await postToWebApp({ action: 'clear', adminPin });
+        const result = await postToWebApp({ action: 'clear', adminPin: adminPinSession });
         if (result.result !== 'success') throw new Error(result.message);
         showToast(result.message, 'success');
         await loadSubmissions(false);
